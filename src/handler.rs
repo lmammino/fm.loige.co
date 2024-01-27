@@ -26,7 +26,22 @@ impl Handler {
         }
     }
 
-    async fn do_call(&self) -> Result<Response<Body>, lambda_runtime::Error> {
+    async fn do_call(&self, req: Request) -> Result<Response<Body>, lambda_runtime::Error> {
+        // check the origin header
+        let origin = req.headers().get("origin").and_then(|v| v.to_str().ok());
+        if origin.is_none() {
+            return Ok(Response::builder()
+                .status(400)
+                .body(Body::Text("Missing origin header".to_string()))
+                .map_err(Box::new)?);
+        }
+        let origin = origin.unwrap();
+        let cors_allow_origin = if origin.starts_with("http://localhost:") {
+            origin
+        } else {
+            self.cors_allow_origin
+        };
+
         let now_playing = self.lastfm_client.now_playing().await?;
         let body = Body::Text(serde_json::to_string(&NowPlayingResponse { now_playing })?);
         let resp = Response::builder()
@@ -35,7 +50,7 @@ impl Handler {
             .header("Cache-Control", "max-age=30")
             .header("Access-Control-Allow-Headers", "Content-Type")
             .header("Access-Control-Allow-Methods", "OPTIONS,GET")
-            .header("Access-Control-Allow-Origin", self.cors_allow_origin)
+            .header("Access-Control-Allow-Origin", cors_allow_origin)
             .body(body)
             .map_err(Box::new)?;
 
@@ -52,8 +67,8 @@ impl Service<Request> for Handler {
         Ok(()).into()
     }
 
-    fn call(&mut self, _req: Request) -> Self::Future {
+    fn call(&mut self, req: Request) -> Self::Future {
         let clone = self.clone();
-        Box::pin(async move { clone.do_call().await })
+        Box::pin(async move { clone.do_call(req).await })
     }
 }

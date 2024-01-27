@@ -30,7 +30,7 @@ $ cargo lambda watch
 This will spin up a development server to which you can send requests. For example:
 
 ```bash
-$ cargo lambda invoke --data-example apigw-request
+$ cargo lambda invoke --data-file events/example-apigw-request.json
 ```
 
 ## Deploying on AWS
