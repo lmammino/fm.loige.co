@@ -1,0 +1,83 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  LastFmApiKey:
+    Type: String
+    Description: The Last.fm API key
+  LastFmUsername:
+    Type: String
+    Description: The Last.fm username
+    Default: loige
+  CorsAllowOrigin:
+    Type: String
+    Description: The CORS origin to support
+    Default: https://loige.co
+  DomainName:
+    Type: String
+    Description: The custom domain name to use for the API Gateway
+    Default: fm.loige.co
+  HostedZoneId:
+    Type: String
+    Description: The ID of the hosted zone in Route53 that manages the custom domain
+    Default: Z01194822XA2I865DPQVJ
+
+Resources:
+  TLSCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref DomainName
+      ValidationMethod: DNS
+
+  Gateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Domain:
+        CertificateArn: !Ref TLSCertificate
+        DomainName: !Ref DomainName
+        Route53:
+          HostedZoneId: !Ref HostedZoneId
+      Cors:
+        AllowMethods: "'GET'"
+        AllowHeaders: "'X-Forwarded-For'"
+        AllowOrigin: !Sub "'${CorsAllowOrigin}'"
+        MaxAge: "'30'"
+        AllowCredentials: true
+      CacheClusterEnabled: true
+      CacheClusterSize: '0.5'
+
+  ApiHandler:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: rust-cargolambda
+    Properties:
+      CodeUri: .
+      Handler: bootstrap
+      Runtime: provided.al2023
+      Architectures:
+        - arm64
+      Environment:
+        Variables:  
+          LASTFM_API_KEY: !Ref LastFmApiKey
+          LASTFM_USERNAME: !Ref LastFmUsername
+          CORS_ALLOW_ORIGIN: !Ref CorsAllowOrigin
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Method: get
+            Path: /playing
+            TimeoutInMillis: 10000
+            RestApiId:
+              Ref: Gateway
+
+Outputs:
+  HttpApiUrl:
+    Description: URL of your API endpoint
+    Value:
+      Fn::Sub: 'https://${DomainName}/'
+  HttpApiId:
+    Description: Api id of HttpApi
+    Value:
+      Ref: Gateway
