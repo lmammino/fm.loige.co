@@ -27,19 +27,15 @@ impl Handler {
     }
 
     async fn do_call(&self, req: Request) -> Result<Response<Body>, lambda_runtime::Error> {
-        // check the origin header
-        let origin = req.headers().get("origin").and_then(|v| v.to_str().ok());
-        if origin.is_none() {
-            return Ok(Response::builder()
-                .status(400)
-                .body(Body::Text("Missing origin header".to_string()))
-                .map_err(Box::new)?);
-        }
-        let origin = origin.unwrap();
-        let cors_allow_origin = if origin.starts_with("http://localhost:") {
-            origin
-        } else {
-            self.cors_allow_origin
+        // check the origin header and define the value for the CORS allow origin header
+        let origin_header = req.headers().get("origin").and_then(|v| v.to_str().ok());
+        let cors_allow_origin = match origin_header {
+            Some(origin)
+                if origin.starts_with("http://localhost:") || origin == "http://localhost" =>
+            {
+                origin
+            }
+            _ => self.cors_allow_origin,
         };
 
         let now_playing = self.lastfm_client.now_playing().await?;

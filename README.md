@@ -33,6 +33,15 @@ This will spin up a development server to which you can send requests. For examp
 $ cargo lambda invoke --data-file events/example-apigw-request.json
 ```
 
+If you want to run this as a local API, you can do that with SAM:
+
+```bash
+$ sam local start-api
+```
+
+Then you can send requests to `http://localhost:3000/playing`.
+
+
 ## Deploying on AWS
 
 Before deploying to AWS you most likely want to customise the [`template.yaml`](/template.yaml).

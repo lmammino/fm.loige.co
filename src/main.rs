@@ -1,12 +1,17 @@
 use handler::Handler;
 use lambda_http::{run, Error};
 use lastfm::Client;
+use tracing_subscriber::filter::{EnvFilter, LevelFilter};
 mod handler;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
+        .with_env_filter(
+            EnvFilter::builder()
+                .with_default_directive(LevelFilter::INFO.into())
+                .from_env_lossy(),
+        )
         // disable printing the name of the module in every log line.
         .with_target(false)
         // disabling time is handy because CloudWatch will add the ingestion time.
