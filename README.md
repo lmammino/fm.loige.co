@@ -1,6 +1,7 @@
 # fm.loige.co
 
-[![Build](https://github.com/lmammino/fm.loige.co/actions/workflows/build.yml/badge.svg)](https://github.com/lmammino/fm.loige.co/actions/workflows/build.yml)
+[![Rust](https://github.com/lmammino/fm.loige.co/actions/workflows/rust.yml/badge.svg)](https://github.com/lmammino/fm.loige.co/actions/workflows/rust.yml)
+[![Sam](https://github.com/lmammino/fm.loige.co/actions/workflows/sam.yml/badge.svg)](https://github.com/lmammino/fm.loige.co/actions/workflows/sam.yml)
 
 
 The _Rusty_ serverless API that powers [fm.loige.co](https://fm.loige.co/playing). Developed with [AWS Lambda](https://aws.amazon.com/lambda/), [Rust](https://www.rust-lang.org/) and [SAM](https://aws.amazon.com/serverless/sam/).
