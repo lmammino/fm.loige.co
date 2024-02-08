@@ -1,4 +1,4 @@
-name: Build
+name: Sam
 
 on:
   push:
@@ -11,17 +11,16 @@ env:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Build
-      run: cargo build --verbose
-    - name: Run tests
-      run: cargo test --verbose
-    - name: Run Clippy
-      run: cargo clippy --all-targets --all-features
+    - uses: actions/checkout@v4
+    - name: Setup Cloud Formation Linter
+      uses: scottbrenner/cfn-lint-action@v2
+    - name: Testing with CFN Lint Command
+      uses: scottbrenner/cfn-lint-action@v2
+      with:
+        command: cfn-lint -t ./template.yaml
     - uses: aws-actions/setup-sam@v2
       with:
         use-installer: true
