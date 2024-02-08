@@ -1,6 +1,7 @@
 use handler::Handler;
 use lambda_http::{run, Error};
 use lastfm::Client;
+use std::sync::Arc;
 use tracing_subscriber::filter::{EnvFilter, LevelFilter};
 mod handler;
 
@@ -21,12 +22,14 @@ async fn main() -> Result<(), Error> {
     let cors_allow_origin = std::env::var("CORS_ALLOW_ORIGIN").unwrap_or("*".to_string());
     let username = std::env::var("LASTFM_USERNAME").expect("LASTFM_USERNAME not set");
     let api_key = std::env::var("LASTFM_API_KEY").expect("LASTFM_API_KEY not set");
-    let lastfm_client = Client::builder()
-        .username(username)
-        .api_key(api_key)
-        .build();
+    let lastfm_client = Arc::from(
+        Client::builder()
+            .username(username)
+            .api_key(api_key)
+            .build(),
+    );
     let handler = Handler::new(
-        Box::leak(Box::new(lastfm_client)),
+        lastfm_client.clone(),
         Box::leak(Box::new(cors_allow_origin)),
     );
 
