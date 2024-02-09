@@ -24,4 +24,17 @@ jobs:
     - uses: aws-actions/setup-sam@v2
       with:
         use-installer: true
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+    - name: Install Zig toolchain
+      uses: korandoru/setup-zig@v1
+      with:
+        zig-version: 0.12.0
+    - name: Install Cargo Lambda
+      uses: jaxxstorm/action-install-gh-release@v1.9.0
+      with:
+        repo: cargo-lambda/cargo-lambda
+        tag: v1.0.1 
+        platform: linux
+        arch: x86_64
     - run: sam build
